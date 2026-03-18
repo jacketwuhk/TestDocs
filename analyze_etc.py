@@ -58,6 +58,17 @@ def main() -> None:
         route: counts for route, counts in grouped.items() if len(counts) > 1
     }
 
+    if not inconsistent_routes:
+        with args.output.open("w", encoding="utf-8-sig", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["起止站点", "最低收费", "总记录数", "不同收费数"])
+        print(
+            f"分析完成：共读取 {sum(sum(c.values()) for c in grouped.values())} 条记录，"
+            "未发现起止站点相同但收费金额不同的记录。"
+        )
+        print(f"输出文件：{args.output}")
+        return
+
     max_price_levels = max((len(counts) for counts in inconsistent_routes.values()), default=0)
 
     header = ["起止站点", "最低收费", "总记录数", "不同收费数"]
