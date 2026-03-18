@@ -4,6 +4,7 @@ import argparse
 import csv
 from collections import Counter, defaultdict
 from decimal import Decimal
+from decimal import InvalidOperation
 from pathlib import Path
 
 
@@ -13,11 +14,25 @@ def format_amount(amount: Decimal) -> str:
 
 def build_summary_rows(source_path: Path) -> tuple[list[dict[str, str]], int]:
     route_amounts: dict[str, Counter[Decimal]] = defaultdict(Counter)
+    row_number = 0
+    amount_text = ""
 
-    with source_path.open("r", encoding="utf-8-sig", newline="") as source_file:
-        reader = csv.DictReader(source_file)
-        for row in reader:
-            route_amounts[row["起止站点"]][Decimal(row["金额"])] += 1
+    try:
+        with source_path.open("r", encoding="utf-8-sig", newline="") as source_file:
+            reader = csv.DictReader(source_file)
+            for row_number, row in enumerate(reader, start=2):
+                route = row["起止站点"]
+                amount_text = row["金额"]
+                amount = Decimal(amount_text)
+                route_amounts[route][amount] += 1
+    except FileNotFoundError as error:
+        raise SystemExit(f"找不到输入文件：{source_path}") from error
+    except KeyError as error:
+        raise SystemExit(f"输入文件缺少必要列：{error.args[0]}") from error
+    except InvalidOperation as error:
+        raise SystemExit(
+            f"输入文件第 {row_number} 行存在无法识别的金额：{amount_text}"
+        ) from error
 
     varying_routes = {
         route: amounts
