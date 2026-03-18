@@ -33,7 +33,7 @@ varied_routes = {
 }
 
 # 求所有路线中最多有多少种不同价格
-max_price_count = max(len(pc) for pc in varied_routes.values())
+max_price_count = max((len(pc) for pc in varied_routes.values()), default=0)
 
 # 构造输出列名
 # 起止站点 | 记录总数 | 价格1 | 价格1数量 | 价格1与最低收费差额 | 价格2 | 价格2数量 | 价格2与最低收费差额 | ...
